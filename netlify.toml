@@ -6,7 +6,7 @@
   # Redirect all API calls to the backend service.
   # Replace the URL below with your actual backend URL after deploying to Railway/Render.
   from = "/api/*"
-  to = "https://universal-media-downloader-24zc.onrender.com"
+  to = "https://universal-media-downloader-24zc.onrender.com/api/:splat"
   status = 200
   force = true
 
