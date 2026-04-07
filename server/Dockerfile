@@ -1,5 +1,6 @@
 FROM node:20-slim
 
+# Cache bust: v2 - using better-sqlite3
 # Install system dependencies including build tools for native modules
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
