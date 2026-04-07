@@ -107,12 +107,21 @@ export default function Home() {
   const jobStatus = jobData?.data;
   const isFinished = jobStatus?.status === 'completed' || jobStatus?.status === 'failed';
 
+  // Parse duration string like "3:32" or "1:02:45" to seconds
+  const parseDuration = (dur) => {
+    if (!dur) return null;
+    const parts = dur.split(':').map(Number);
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return null;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="container-app py-16 md:py-24 relative overflow-hidden"
+      className="container-app py-8 md:py-16 relative overflow-hidden"
     >
       {/* Organic Decorative Blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full opacity-20 blur-[120px] pointer-events-none z-[-1]"
@@ -120,34 +129,34 @@ export default function Home() {
       <div className="absolute bottom-[-5%] right-[-5%] w-[30%] h-[30%] rounded-full opacity-10 blur-[100px] pointer-events-none z-[-1]"
         style={{ background: 'var(--color-text-primary)' }} />
 
-      <div className="flex flex-col items-center max-w-5xl mx-auto relative z-10 space-y-16">
+      <div className="flex flex-col items-center max-w-5xl mx-auto relative z-10 space-y-8 md:space-y-12">
         {/* Hero Section */}
         <div className="w-full flex flex-col items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center lg:text-left mb-8 md:mb-12"
+            className="text-center mb-6 md:mb-10"
           >
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full text-[10px] font-black tracking-[0.3em] uppercase mb-8"
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black tracking-[0.3em] uppercase mb-5"
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-glass-border)', color: 'var(--color-accent)' }}>
-              <Zap size={16} strokeWidth={3} />
+              <Zap size={14} strokeWidth={3} />
               Professional Media Tool
             </div>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-display font-black leading-[0.85] tracking-tighter mb-10">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-display font-black leading-[0.85] tracking-tighter mb-5 md:mb-8">
               Universal Media<br />
               <span className="italic" style={{ color: 'var(--color-accent)' }}>Downloader</span>
             </h1>
-            <p className="text-xl md:text-3xl opacity-70 max-w-2xl mx-auto leading-[1.3] font-medium mb-12" style={{ color: 'var(--color-text-secondary)' }}>
-              Explore the fastest way to save media from <span className="font-bold underline decoration-accent/30 underline-offset-8" style={{ color: 'var(--color-text-primary)' }}>YouTube</span>, <span className="font-bold underline decoration-accent/30 underline-offset-8" style={{ color: 'var(--color-text-primary)' }}>Instagram</span>, and 40+ platforms instantly.
+            <p className="text-base sm:text-xl md:text-2xl opacity-70 max-w-2xl mx-auto leading-[1.4] font-medium mb-6 md:mb-10 px-2" style={{ color: 'var(--color-text-secondary)' }}>
+              Save media from <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>YouTube</span>, <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>Instagram</span>, and 40+ platforms instantly.
             </p>
 
-            <div className="flex flex-wrap justify-center gap-6">
+            <div className="flex flex-wrap justify-center gap-4">
               <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest opacity-60">
-                <ShieldCheck size={18} className="text-emerald-500" strokeWidth={3} />
+                <ShieldCheck size={16} className="text-emerald-500" strokeWidth={3} />
                 No Ads / No Malware
               </div>
               <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest opacity-60">
-                <Globe size={18} className="text-blue-500" strokeWidth={3} />
+                <Globe size={16} className="text-blue-500" strokeWidth={3} />
                 All Formats Supported
               </div>
             </div>
@@ -188,7 +197,7 @@ export default function Home() {
               <VideoPreview metadata={metadata} />
               
               <div className="glass-card space-y-4">
-                <FormatSelector selected={selectedFormat} onSelect={setSelectedFormat} availableFormats={metadata.formats} />
+                <FormatSelector selected={selectedFormat} onSelect={setSelectedFormat} availableFormats={metadata.formats} durationSeconds={metadata.durationSeconds || null} />
 
                 {selectedFormat && !currentJobId && (
                   <DownloadButton

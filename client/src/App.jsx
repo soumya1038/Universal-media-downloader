@@ -59,7 +59,7 @@ export default function App() {
         <DisclaimerBanner />
         <Navbar toggleTheme={toggleTheme} theme={theme} />
 
-        <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-8">
+        <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-20 md:pt-24">
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<Home />} />
