@@ -15,7 +15,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Install dependencies
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 # Copy server source
