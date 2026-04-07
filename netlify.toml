@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build --prefix client"
+  publish = "client/dist"
+
+[[redirects]]
+  # Redirect all API calls to the backend service.
+  # Replace the URL below with your actual backend URL after deploying to Railway/Render.
+  from = "/api/*"
+  to = "https://your-backend-app.railway.app/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  # Standard SPA redirect for React Router
+  from = "/*"
+  to = "/index.html"
+  status = 200
