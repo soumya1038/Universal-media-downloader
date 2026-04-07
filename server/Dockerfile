@@ -21,7 +21,7 @@ COPY package.json package-lock.json ./
 RUN npm install --omit=dev --no-audit
 
 # Rebuild native modules for the container's architecture
-RUN npm rebuild sqlite3 --build-from-source
+RUN npm rebuild better-sqlite3 --build-from-source
 
 # Copy server source
 COPY . .
