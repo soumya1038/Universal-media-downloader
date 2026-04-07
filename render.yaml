@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: universal-media-downloader-api
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: ./server
+    plan: free
+    region: oregon
+    branch: main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: FRONTEND_URL
+        sync: false
+      - key: MAX_FILE_SIZE_MB
+        value: 2048
+      - key: MAX_CONCURRENT_DOWNLOADS
+        value: 3
+      - key: FILE_RETENTION_HOURS
+        value: 24
+    healthCheckPath: /health

@@ -5,6 +5,17 @@ A full-stack web application for downloading and converting publicly accessible 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Node](https://img.shields.io/badge/node-%3E%3D18-green)
 
+## 🚨 Deployment Required
+
+**If you're seeing 404 errors on Netlify**, your backend is not deployed. See **[DEPLOY_INSTRUCTIONS.md](./DEPLOY_INSTRUCTIONS.md)** for a 3-step fix.
+
+**Quick summary:**
+1. Deploy backend to [Render](https://render.com) (free)
+2. Update `netlify.toml` with your backend URL
+3. Push to GitHub — Netlify auto-redeploys
+
+---
+
 ## ✨ Features
 
 - **Multi-platform support** — YouTube, Instagram, Facebook, X, TikTok, and direct URLs
