@@ -8,9 +8,15 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    host: true,        // listen on 0.0.0.0 so mobile devices on the same network can reach it
     port: 5173,
     proxy: {
       '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        ws: true,
+      },
+      '/health': {
         target: 'http://localhost:5000',
         changeOrigin: true,
       },

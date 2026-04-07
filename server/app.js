@@ -9,7 +9,7 @@ const app = express();
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? process.env.FRONTEND_URL
-    : ['http://localhost:5173', 'http://localhost:3000'],
+    : true,   // allow all origins in development (covers mobile on local network)
   credentials: true,
 }));
 app.use(express.json({ limit: '1mb' }));

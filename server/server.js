@@ -27,7 +27,7 @@ const startServer = async () => {
     console.log('✓ Database schema initialized');
 
     // Start Express server
-    app.listen(config.port, () => {
+    app.listen(config.port, '0.0.0.0', () => {
       console.log(`✓ Server running on port ${config.port}`);
       console.log(`  Environment: ${config.nodeEnv}`);
       console.log(`  API: http://localhost:${config.port}/api`);
