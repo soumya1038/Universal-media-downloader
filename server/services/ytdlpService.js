@@ -41,6 +41,7 @@ export async function analyzeUrl(url) {
       '--no-download',
       '--no-warnings',
       '--no-playlist',
+      '--extractor-args', 'youtube:player_client=android',
       '--ffmpeg-location', ffmpegPath,
       url,
     ], { timeout: 30000 });
@@ -115,6 +116,7 @@ export async function downloadMedia(url, outputPath, format, quality, formatId, 
   const args = [
     '--no-playlist',
     '--no-warnings',
+    '--extractor-args', 'youtube:player_client=android',
     '--ffmpeg-location', ffmpegPath,
     '-o', outputPath,
   ];
