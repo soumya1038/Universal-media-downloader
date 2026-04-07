@@ -1,12 +1,14 @@
 FROM node:20-slim
 
-# Install yt-dlp, FFmpeg, and Python3 (required by yt-dlp)
+# Install system dependencies including build tools for native modules
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       python3 \
       ffmpeg \
       curl \
-      ca-certificates && \
+      ca-certificates \
+      build-essential \
+      python3-dev && \
     curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp && \
     apt-get clean && \
@@ -17,6 +19,9 @@ WORKDIR /app
 # Install dependencies
 COPY package.json package-lock.json ./
 RUN npm install --omit=dev --no-audit
+
+# Rebuild native modules for the container's architecture
+RUN npm rebuild sqlite3 --build-from-source
 
 # Copy server source
 COPY . .
