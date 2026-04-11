@@ -28,6 +28,11 @@ export function detectPlatform(url) {
   if (lower.includes('facebook.com') || lower.includes('fb.watch')) return 'facebook';
   if (lower.includes('twitter.com') || lower.includes('x.com')) return 'x';
   if (lower.includes('tiktok.com')) return 'tiktok';
+  if (lower.includes('spotify.com')) return 'spotify';
+  if (lower.includes('apple.com/music') || lower.includes('music.apple.com')) return 'apple-music';
+  if (lower.includes('netflix.com')) return 'netflix';
+  if (lower.includes('hulu.com')) return 'hulu';
+  if (lower.includes('disneyplus.com') || lower.includes('disney+')) return 'disney+';
   return 'direct';
 }
 
@@ -35,6 +40,14 @@ export function detectPlatform(url) {
  * Analyze a URL and return metadata using yt-dlp --dump-json.
  */
 export async function analyzeUrl(url) {
+  // Check for DRM-protected platforms upfront
+  const platform = detectPlatform(url);
+  const drmPlatforms = ['spotify', 'apple-music', 'netflix', 'hulu', 'disney+'];
+  
+  if (drmPlatforms.includes(platform)) {
+    throw new Error(`${platform.charAt(0).toUpperCase() + platform.slice(1)} uses DRM protection and cannot be downloaded. This platform encrypts content to prevent downloading. Please use the official ${platform} app to listen/watch offline.`);
+  }
+
   try {
     const { stdout } = await execFileAsync(ytdlpPath, [
       '--dump-json',
@@ -47,7 +60,6 @@ export async function analyzeUrl(url) {
     ], { timeout: 30000 });
 
     const data = JSON.parse(stdout);
-    const platform = detectPlatform(url);
 
     // Extract available formats
     const formats = [];
@@ -105,6 +117,22 @@ export async function analyzeUrl(url) {
       formats,
     };
   } catch (error) {
+    // Better error messages for common issues
+    const errMsg = error.message || '';
+    
+    if (errMsg.includes('DRM')) {
+      throw new Error('This content is DRM-protected and cannot be downloaded. Please use the official app for offline access.');
+    }
+    if (errMsg.includes('Sign in') || errMsg.includes('not a bot')) {
+      throw new Error('Platform requires authentication. Please try a different video or check if the video is public.');
+    }
+    if (errMsg.includes('Video unavailable') || errMsg.includes('Private video')) {
+      throw new Error('Video is unavailable, private, or has been removed.');
+    }
+    if (errMsg.includes('Unsupported URL')) {
+      throw new Error('This URL is not supported. Supported platforms: YouTube, Instagram, Facebook, X (Twitter), TikTok, and direct video URLs.');
+    }
+    
     throw new Error(`Failed to analyze URL: ${error.message}`);
   }
 }
