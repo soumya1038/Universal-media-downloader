@@ -17,7 +17,7 @@ const STEPS = [
   { key: 'completed', label: 'Ready', icon: CheckCircle },
 ];
 
-export default function ProgressBar({ status, progress = 0, downloadUrl, error, onCancel, fileSize, format }) {
+export default function ProgressBar({ status, progress = 0, downloadUrl, error, onCancel, fileSize, format, speed, downloadedBytes }) {
   const stepIndex = status === 'completed' ? 3
     : status === 'processing' && progress > 60 ? 2
     : status === 'processing' ? 1
@@ -99,7 +99,7 @@ export default function ProgressBar({ status, progress = 0, downloadUrl, error, 
       </div>
 
       <p className="text-xs mt-2 text-center" style={{ color: 'var(--color-text-muted)' }}>
-        {progress}% complete
+        {progress}% complete {status === 'processing' && speed && ` • Speed: ${speed}`} {status === 'processing' && downloadedBytes && ` • Downloaded: ${downloadedBytes}`}
       </p>
 
       {/* Download link when ready */}

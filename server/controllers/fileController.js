@@ -22,7 +22,8 @@ export async function downloadFile(req, res) {
     }
 
     const stat = statSync(job.file_path);
-    const filename = `${job.title || 'download'}.${job.format || 'mp4'}`;
+    const fileExt = path.extname(job.file_path || '').replace('.', '') || job.format || 'mp4';
+    const filename = `${job.title || 'download'}.${fileExt}`;
 
     res.setHeader('Content-Length', stat.size);
     res.setHeader('Content-Type', 'application/octet-stream');

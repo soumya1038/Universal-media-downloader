@@ -24,6 +24,11 @@ const startServer = async () => {
     for (const stmt of statements) {
       await query(stmt);
     }
+    
+    // Safety migrations for existing databases
+    try { await query('ALTER TABLE jobs ADD COLUMN speed TEXT'); } catch (e) { /* ignore if exists */ }
+    try { await query('ALTER TABLE jobs ADD COLUMN downloaded_bytes TEXT'); } catch (e) { /* ignore if exists */ }
+    
     console.log('✓ Database schema initialized');
 
     // Start Express server

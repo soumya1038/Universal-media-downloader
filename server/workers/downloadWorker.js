@@ -1,5 +1,5 @@
 import path from 'path';
-import { mkdirSync, existsSync, statSync } from 'fs';
+import { mkdirSync, existsSync, statSync, readdirSync } from 'fs';
 import { query } from '../db/index.js';
 import { downloadMedia } from '../services/ytdlpService.js';
 import { sanitizeFilename } from '../utils/sanitize.js';
@@ -18,7 +18,7 @@ export const activeDownloads = new Map();
 
 // Setup processor for the native in-memory queue
 downloadQueue.process(async (job) => {
-  const { jobId, url, format, quality, formatId } = job.data;
+  const { jobId, url, format, quality, formatId, downloadMethod, sourceUrl } = job.data;
 
   console.log(`[Worker] Processing job ${jobId}: ${url} (formatId: ${formatId || 'N/A'})`);
 
@@ -36,45 +36,64 @@ downloadQueue.process(async (job) => {
     const jobResult = await query('SELECT title FROM jobs WHERE id = ?', [jobId]);
     const title = jobResult.rows[0]?.title || 'download';
     const safeTitle = sanitizeFilename(title);
-    const ext = format === 'mp3' || quality === 'audio' ? 'mp3' : (format || 'mp4');
-    const outputFilename = `${safeTitle}_${jobId.substring(0, 8)}.${ext}`;
-    const outputPath = path.join(downloadDir, outputFilename);
+    const outputBase = `${safeTitle}_${jobId.substring(0, 8)}`;
+    const outputTemplate = path.join(downloadDir, `${outputBase}.%(ext)s`);
 
-    // Update progress - downloading
+    // Update progress - downloading started
     await query(
       'UPDATE jobs SET progress = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [30, jobId]
     );
 
+    let lastUpdate = 0;
+    const onProgress = (prog) => {
+      const now = Date.now();
+      if (now - lastUpdate > 1000) {
+        lastUpdate = now;
+        const scaledProgress = Math.floor(30 + (prog.percent * 0.6));
+        // We use fire-and-forget for progression so it doesn't block the download
+        query(
+          'UPDATE jobs SET progress = ?, speed = ?, downloaded_bytes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+          [scaledProgress, prog.speed || null, prog.downloaded || null, jobId]
+        ).catch(e => console.error(`[Worker] Progress update error: ${e.message}`));
+      }
+    };
+
     // Download media
-    await downloadMedia(url, outputPath, format, quality, formatId, abortController.signal);
+    await downloadMedia(url, outputTemplate, {
+      format,
+      quality,
+      formatId,
+      signal: abortController.signal,
+      downloadMethod,
+      sourceUrl,
+      onProgress,
+    });
 
     // Update progress - processing complete
     await query(
-      'UPDATE jobs SET progress = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      'UPDATE jobs SET progress = ?, speed = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [90, jobId]
     );
 
     // Find the actual output file (yt-dlp may change extension)
-    let finalPath = outputPath;
+    let finalPath = path.join(downloadDir, `${outputBase}.${format || 'mp4'}`);
+    const candidates = readdirSync(downloadDir)
+      .filter((name) => name.startsWith(`${outputBase}.`))
+      .map((name) => path.join(downloadDir, name));
 
-    // Check for common yt-dlp output patterns
-    const possibleExts = ['mp4', 'webm', 'mkv', 'mp3', 'm4a'];
+    if (candidates.length > 0) {
+      candidates.sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs);
+      finalPath = candidates[0];
+    }
+
     if (!existsSync(finalPath)) {
-      for (const tryExt of possibleExts) {
-        const tryPath = outputPath.replace(/\.[^.]+$/, `.${tryExt}`);
-        if (existsSync(tryPath)) {
-          finalPath = tryPath;
-          break;
-        }
-      }
+      throw new Error('Downloaded file could not be located after completion.');
     }
 
     // Get file size
     let fileSize = null;
-    if (existsSync(finalPath)) {
-      fileSize = statSync(finalPath).size;
-    }
+    fileSize = statSync(finalPath).size;
 
     // Update job as completed
     await query(

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Clipboard, Search, Loader2, Link2 } from 'lucide-react';
 
-export default function URLInput({ onAnalyze, isLoading }) {
-  const [url, setUrl] = useState('');
+export default function URLInput({ url, onUrlChange, onAnalyze, isLoading }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,7 +15,7 @@ export default function URLInput({ onAnalyze, isLoading }) {
     try {
       const text = await navigator.clipboard.readText();
       if (text && text.trim()) {
-        setUrl(text.trim());
+        onUrlChange(text.trim());
       }
     } catch {
       // Clipboard API not available or permission denied — silently ignored
@@ -47,7 +46,7 @@ export default function URLInput({ onAnalyze, isLoading }) {
             <input
               type="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => onUrlChange(e.target.value)}
               placeholder="https://www.youtube.com/watch?v=..."
               className="glass-input w-full pr-12"
               disabled={isLoading}

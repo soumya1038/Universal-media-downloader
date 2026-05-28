@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS jobs (
   quality TEXT NOT NULL DEFAULT '720p',
   status TEXT NOT NULL DEFAULT 'queued',
   progress INTEGER DEFAULT 0,
+  speed TEXT,
+  downloaded_bytes TEXT,
   file_path TEXT,
   file_size INTEGER,
   error TEXT,

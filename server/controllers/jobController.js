@@ -23,6 +23,8 @@ export async function getJobStatus(req, res) {
         quality: job.quality,
         status: job.status,
         progress: job.progress,
+        speed: job.speed,
+        downloadedBytes: job.downloaded_bytes,
         fileSize: job.file_size,
         format: job.format,
         downloadUrl: job.status === 'completed' ? `/api/download-file/${job.id}` : null,

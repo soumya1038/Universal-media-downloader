@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { User, Globe, Clock, Film, ExternalLink } from 'lucide-react';
+import { User, Globe, Clock, Film, ShieldAlert, Link as LinkIcon } from 'lucide-react';
 
 export default function VideoPreview({ metadata }) {
   if (!metadata) return null;
@@ -64,6 +64,21 @@ export default function VideoPreview({ metadata }) {
               </span>
             )}
           </div>
+
+          {metadata?.checks?.method && (
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-white/5 border border-white/10">
+                <LinkIcon size={12} />
+                Method: {metadata.checks.method}
+              </span>
+              {metadata.checks.drmProtected && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-red-500/10 border border-red-500/20 text-red-300">
+                  <ShieldAlert size={12} />
+                  DRM Protected
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </motion.div>
