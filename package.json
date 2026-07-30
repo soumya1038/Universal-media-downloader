@@ -3,14 +3,17 @@
   "version": "1.1.0",
   "description": "Universal Media Downloader & Converter",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "client": "npm run dev --prefix client",
+    "client": "npm run dev --prefix client-2.0",
     "server": "npm run dev --prefix server",
-    "build": "npm install --prefix client && npm run build --prefix client",
-    "install:all": "npm install && npm install --prefix client && npm install --prefix server"
+    "build": "npm install --prefix client-2.0 && npm run build --prefix client-2.0",
+    "install:all": "npm install && npm install --prefix client-2.0 && npm install --prefix server",
+    "electron:dev": "concurrently \"npm run dev\" \"npx electron .\""
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "electron": "^33.0.0"
   }
 }

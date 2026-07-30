@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { query } from '../db/index.js';
 import downloadQueue from '../queue/index.js';
 import { detectPlatform, isDrmPlatform, getDrmPlatformInfo } from '../services/ytdlpService.js';
+import { getDiskSpace } from '../utils/disk.js';
+import config from '../config/index.js';
 
 export async function startDownload(req, res) {
   try {
@@ -36,11 +38,21 @@ export async function startDownload(req, res) {
       });
     }
 
+    // Check disk space before queuing job
+    const { freeBytes } = await getDiskSpace(config.storage?.downloadPath || '.');
+    const minFreeBytes = 250 * 1024 * 1024; // Require at least 250MB free space
+    if (freeBytes < minFreeBytes) {
+      return res.status(507).json({
+        success: false,
+        error: 'Insufficient disk storage space available on server.',
+      });
+    }
+
     // Insert job record
     await query(
-      `INSERT INTO jobs (id, url, title, thumbnail, platform, author, duration, format, quality, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'queued')`,
-      [jobId, url, title || 'Unknown', thumbnail, platform || detectedPlatform, author, duration, format, quality]
+      `INSERT INTO jobs (id, url, title, thumbnail, platform, author, duration, format, quality, status, download_method, source_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'queued', $10, $11)`,
+      [jobId, url, title || 'Unknown', thumbnail, platform || detectedPlatform, author, duration, format, quality, downloadMethod || null, sourceUrl || null]
     );
 
     // Enqueue the job using our in-memory queue

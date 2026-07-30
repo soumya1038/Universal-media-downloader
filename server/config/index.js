@@ -33,6 +33,11 @@ const config = {
     maxConcurrentDownloads: parseInt(process.env.MAX_CONCURRENT_DOWNLOADS || '3', 10),
     fileRetentionHours: parseInt(process.env.FILE_RETENTION_HOURS || '24', 10),
   },
+
+  ytdlp: {
+    proxy: process.env.YTDLP_PROXY || '',
+    noCheckCertificates: process.env.YTDLP_NO_CHECK_CERTIFICATES === 'true',
+  },
 };
 
 export default config;

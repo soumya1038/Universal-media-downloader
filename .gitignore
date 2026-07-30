@@ -1,6 +1,11 @@
 node_modules/
 dist/
+dist-electron/
 .env
 storage/
 *.log
+*.sqlite*
 server/bin/
+client-2.0/node_modules/
+client-2.0/dist/
+server/node_modules/

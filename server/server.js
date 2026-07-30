@@ -1,4 +1,4 @@
-import app from './app.js';
+import app from './app.js'; // entry point for server
 import config from './config/index.js';
 import { query } from './db/index.js';
 import './workers/downloadWorker.js';
@@ -28,6 +28,10 @@ const startServer = async () => {
     // Safety migrations for existing databases
     try { await query('ALTER TABLE jobs ADD COLUMN speed TEXT'); } catch (e) { /* ignore if exists */ }
     try { await query('ALTER TABLE jobs ADD COLUMN downloaded_bytes TEXT'); } catch (e) { /* ignore if exists */ }
+    try { await query('ALTER TABLE jobs ADD COLUMN retry_count INTEGER DEFAULT 0'); } catch (e) { /* ignore if exists */ }
+    try { await query('ALTER TABLE jobs ADD COLUMN download_method TEXT'); } catch (e) { /* ignore if exists */ }
+    try { await query('ALTER TABLE jobs ADD COLUMN source_url TEXT'); } catch (e) { /* ignore if exists */ }
+    try { await query('ALTER TABLE jobs ADD COLUMN eta TEXT'); } catch (e) { /* ignore if exists */ }
     
     console.log('✓ Database schema initialized');
 

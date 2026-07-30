@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 import { spotifyToYouTube } from './spotifyService.js';
+import config from '../config/index.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -314,23 +315,39 @@ function buildDownloadOptions({ videoFormats, durationSeconds, sourceUrl, downlo
 }
 
 async function fetchMetadata(url) {
-  const { stdout } = await execFileAsync(
-    ytdlpPath,
-    [
+  try {
+    const args = [
       '--dump-json',
       '--no-download',
       '--no-warnings',
       '--no-playlist',
-      '--extractor-args',
-      'youtube:player_client=android',
       '--ffmpeg-location',
       ffmpegPath,
-      url,
-    ],
-    { timeout: 35000 }
-  );
+    ];
 
-  return JSON.parse(stdout);
+    if (config.ytdlp?.proxy) {
+      args.push('--proxy', config.ytdlp.proxy);
+    }
+    if (config.ytdlp?.noCheckCertificates) {
+      args.push('--no-check-certificates');
+    }
+
+    args.push(url);
+
+    const { stdout } = await execFileAsync(
+      ytdlpPath,
+      args,
+      { timeout: 35000 }
+    );
+
+    return JSON.parse(stdout);
+  } catch (error) {
+    if (error.killed) {
+      throw new Error('Process timed out after 35 seconds');
+    }
+    const errorDetails = error.stderr ? error.stderr.trim() : error.message;
+    throw new Error(errorDetails);
+  }
 }
 
 function buildChecks(url, platform) {
@@ -476,6 +493,12 @@ export async function analyzeUrl(url) {
     if (errMsg.includes('Unsupported URL')) {
       throw new Error('This URL is not supported. Supported platforms: YouTube, Instagram, Facebook, X (Twitter), TikTok, and direct video URLs.');
     }
+    if (errMsg.includes('timed out') || errMsg.includes('timeout')) {
+      throw new Error('Connection to the server timed out. Please try again later.');
+    }
+    if (errMsg.includes('Unable to download webpage')) {
+      throw new Error('Unable to download webpage. The site might be blocking requests or is currently unavailable.');
+    }
     
     throw new Error(`Failed to analyze URL: ${error.message}`);
   }
@@ -522,10 +545,16 @@ export async function downloadMedia(inputUrl, outputTemplate, options = {}) {
   const args = [
     '--no-playlist',
     '--no-warnings',
-    '--extractor-args', 'youtube:player_client=android',
     '--ffmpeg-location', ffmpegPath,
     '-o', outputTemplate,
   ];
+
+  if (config.ytdlp?.proxy) {
+    args.push('--proxy', config.ytdlp.proxy);
+  }
+  if (config.ytdlp?.noCheckCertificates) {
+    args.push('--no-check-certificates');
+  }
 
   const wantsAudio = AUDIO_FORMATS.has(format) || quality === 'audio';
 
@@ -568,6 +597,11 @@ export async function downloadMedia(inputUrl, outputTemplate, options = {}) {
     args.push('-f', 'best', '--merge-output-format', format || 'mp4');
   }
 
+  // Acceleration & Reliability Flags (Phase 1 & Phase 2)
+  // -N 4 / --concurrent-fragments 4: 3x-5x speed boost via parallel fragment downloads
+  // -c / --continue: auto-resume partial downloads seamlessly
+  args.push('--concurrent-fragments', '4', '-c');
+
   args.push(effectiveUrl);
 
   return new Promise((resolve, reject) => {
@@ -586,10 +620,12 @@ export async function downloadMedia(inputUrl, outputTemplate, options = {}) {
                const downloadedMatch = line.match(/of\s+[~]?([^\s]+)/) || line.match(/(\d+\.?\d*[a-zA-Z]+)\s+at/);
                
                if (percentMatch) {
+                 const etaMatch = line.match(/ETA\s+([^\s]+)/);
                  const progressObj = {
                    percent: parseFloat(percentMatch[1]),
                    speed: speedMatch ? speedMatch[1] : null,
-                   downloaded: downloadedMatch ? downloadedMatch[1] : null
+                   downloaded: downloadedMatch ? downloadedMatch[1] : null,
+                   eta: etaMatch ? etaMatch[1] : null,
                  };
                  onProgress(progressObj);
                }

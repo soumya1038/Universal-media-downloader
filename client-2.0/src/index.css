@@ -1,0 +1,283 @@
+@import "tailwindcss";
+
+/* ===== Universal Media Downloader — Design System =====
+   Light: Warm White #FAFAF8 / Card #FFFFFF / Text #1A1A1A
+   Dark:  Deep Graphite #0F0F0F / Card #1A1A1A / Text #F0F0F0
+   ====================================================== */
+
+:root {
+  --bg: #FAFAF8;
+  --on-bg: #1A1A1A;
+
+  --surface: #FAFAF8;
+  --surface-container: #FFFFFF;
+  --surface-container-high: #F4F3F0;
+  --surface-container-highest: #ECEAE6;
+  --on-surface: #1A1A1A;
+  --on-surface-variant: #6B6B6B;
+
+  --outline: #E8E6E1;
+  --outline-variant: #F0EEE9;
+
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-container: #DBEAFE;
+  --on-primary: #FFFFFF;
+
+  --secondary: #4F46E5;
+  --secondary-container: #EEF2FF;
+
+  --success: #16A34A;
+  --success-soft: #F0FDF4;
+  --warning: #F59E0B;
+  --warning-soft: #FFFBEB;
+  --error: #DC2626;
+  --error-soft: #FEF2F2;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+html.dark {
+  --bg: #0F0F0F;
+  --on-bg: #F0F0F0;
+
+  --surface: #0F0F0F;
+  --surface-container: #1A1A1A;
+  --surface-container-high: #262626;
+  --surface-container-highest: #333333;
+  --on-surface: #F0F0F0;
+  --on-surface-variant: #8A8A8A;
+
+  --outline: #2A2A2A;
+  --outline-variant: #1F1F1F;
+
+  --primary: #3B82F6;
+  --primary-hover: #60A5FA;
+  --primary-container: #1E3A5F;
+  --on-primary: #FFFFFF;
+
+  --secondary: #6366F1;
+  --secondary-container: #312E81;
+
+  --success: #22C55E;
+  --success-soft: rgba(34,197,94,0.1);
+  --warning: #F59E0B;
+  --warning-soft: rgba(245,158,11,0.1);
+  --error: #EF4444;
+  --error-soft: rgba(239,68,68,0.1);
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+/* ===== Base ===== */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--bg);
+  color: var(--on-bg);
+  overflow-x: hidden;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ===== Card System ===== */
+.glass-card {
+  background: var(--surface-container);
+  border: 1px solid var(--outline-variant);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.glass-panel {
+  background: var(--surface-container);
+  border: 1px solid var(--outline-variant);
+  border-radius: 12px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ===== Buttons ===== */
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--on-surface-variant);
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-ghost:hover { background: var(--surface-container-high); color: var(--on-surface); border-color: var(--on-surface-variant); }
+
+.btn-danger {
+  background: transparent;
+  color: var(--error);
+  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-danger:hover { background: var(--error-soft); }
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.btn-icon:hover { background: var(--surface-container-high); color: var(--on-surface); }
+
+/* ===== Input Fields ===== */
+.input-field {
+  background: var(--surface-container);
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--on-surface);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+.input-field::placeholder { color: var(--on-surface-variant); opacity: 0.7; }
+.input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+
+/* ===== Badges ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+.badge-primary { background: var(--primary-container); color: var(--primary); }
+.badge-success { background: var(--success-soft); color: var(--success); }
+.badge-warning { background: var(--warning-soft); color: var(--warning); }
+.badge-error { background: var(--error-soft); color: var(--error); }
+.badge-neutral { background: var(--surface-container-high); color: var(--on-surface-variant); }
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--outline); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--on-surface-variant); }
+
+/* ===== Shimmer/Skeleton ===== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--surface-container-high) 25%,
+    var(--surface-container-highest) 50%,
+    var(--surface-container-high) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ===== Progress Bar Glow ===== */
+@keyframes progress-glow {
+  0%, 100% { box-shadow: 0 0 4px color-mix(in srgb, var(--primary) 40%, transparent); }
+  50% { box-shadow: 0 0 8px color-mix(in srgb, var(--primary) 60%, transparent); }
+}
+.progress-bar-active {
+  animation: progress-glow 2s ease-in-out infinite;
+}
+
+/* ===== Focus Ring ===== */
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ===== Tailwind Theme Extensions ===== */
+@theme {
+  --color-background: var(--bg);
+  --color-on-background: var(--on-bg);
+
+  --color-surface: var(--surface);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary: var(--on-primary);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-container: var(--secondary-container);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-error: var(--error);
+  --color-error-soft: var(--error-soft);
+}

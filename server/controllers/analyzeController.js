@@ -1,4 +1,4 @@
-import { analyzeUrl, detectPlatform } from '../services/ytdlpService.js';
+import { analyzeUrl } from '../services/ytdlpService.js';
 
 export async function analyze(req, res) {
   try {
@@ -10,10 +10,13 @@ export async function analyze(req, res) {
       data: metadata,
     });
   } catch (error) {
-    console.error('Analyze error:', error.message);
-    res.status(500).json({
+    const message = error?.message || String(error) || 'Failed to analyze URL.';
+    console.error('Analyze error:', message);
+    const statusCode = message.includes('timed out') ? 504 : 400;
+    res.status(statusCode).json({
       success: false,
-      error: error.message || 'Failed to analyze URL.',
+      error: message,
     });
   }
 }
+

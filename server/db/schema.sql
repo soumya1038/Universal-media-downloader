@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS jobs (
   file_path TEXT,
   file_size INTEGER,
   error TEXT,
+  retry_count INTEGER DEFAULT 0,
+  download_method TEXT,
+  source_url TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

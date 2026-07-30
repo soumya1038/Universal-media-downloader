@@ -1,8 +1,12 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import { mkdirSync, existsSync } from 'fs';
 import config from '../config/index.js';
 
 const storagePath = path.resolve(config.storage.downloadPath, '..', 'database.sqlite');
+const dbDir = path.dirname(storagePath);
+if (!existsSync(dbDir)) mkdirSync(dbDir, { recursive: true });
+
 const db = new Database(storagePath);
 
 // Enable WAL mode for better concurrency

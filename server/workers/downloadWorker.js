@@ -4,6 +4,7 @@ import { query } from '../db/index.js';
 import { downloadMedia } from '../services/ytdlpService.js';
 import { sanitizeFilename } from '../utils/sanitize.js';
 import config from '../config/index.js';
+import { broadcastEvent } from '../controllers/eventController.js';
 
 // Ensure storage directories exist
 const downloadDir = path.resolve(config.storage.downloadPath);
@@ -48,27 +49,66 @@ downloadQueue.process(async (job) => {
     let lastUpdate = 0;
     const onProgress = (prog) => {
       const now = Date.now();
-      if (now - lastUpdate > 1000) {
+      if (now - lastUpdate > 500) {
         lastUpdate = now;
         const scaledProgress = Math.floor(30 + (prog.percent * 0.6));
         // We use fire-and-forget for progression so it doesn't block the download
         query(
-          'UPDATE jobs SET progress = ?, speed = ?, downloaded_bytes = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-          [scaledProgress, prog.speed || null, prog.downloaded || null, jobId]
+          'UPDATE jobs SET progress = ?, speed = ?, downloaded_bytes = ?, eta = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+          [scaledProgress, prog.speed || null, prog.downloaded || null, prog.eta || null, jobId]
         ).catch(e => console.error(`[Worker] Progress update error: ${e.message}`));
+
+        // Real-Time Sub-100ms SSE Event Broadcast
+        broadcastEvent('job_progress', {
+          jobId,
+          status: 'processing',
+          progress: scaledProgress,
+          speed: prog.speed || null,
+          downloadedBytes: prog.downloaded || null,
+          eta: prog.eta || null
+        });
       }
     };
 
-    // Download media
-    await downloadMedia(url, outputTemplate, {
-      format,
-      quality,
-      formatId,
-      signal: abortController.signal,
-      downloadMethod,
-      sourceUrl,
-      onProgress,
-    });
+    // Auto-retry wrapper for network glitches
+    let attempts = 0;
+    const maxAttempts = 3;
+    let lastError = null;
+
+    while (attempts < maxAttempts) {
+      try {
+        attempts++;
+        if (attempts > 1) {
+          console.log(`[Worker] Job ${jobId} auto-retrying (attempt ${attempts}/${maxAttempts})...`);
+          await query('UPDATE jobs SET retry_count = ?, speed = ? WHERE id = ?', [attempts - 1, `Retrying (${attempts}/${maxAttempts})...`, jobId]);
+          await new Promise((r) => setTimeout(r, 2000 * Math.pow(2, attempts - 2)));
+        }
+
+        // Download media
+        await downloadMedia(url, outputTemplate, {
+          format,
+          quality,
+          formatId,
+          signal: abortController.signal,
+          downloadMethod,
+          sourceUrl,
+          onProgress,
+        });
+
+        lastError = null;
+        break; // Success! Exit retry loop.
+      } catch (err) {
+        lastError = err;
+        if (err.code === 'ABORT_ERR') break; // Don't retry if manually cancelled
+        const msg = err.message || '';
+        const isTransient = msg.includes('timed out') || msg.includes('Connection reset') || msg.includes('HTTP Error 5') || msg.includes('Unable to download webpage');
+        if (!isTransient) break; // Non-transient error, exit loop immediately
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
+    }
 
     // Update progress - processing complete
     await query(
@@ -100,6 +140,14 @@ downloadQueue.process(async (job) => {
       'UPDATE jobs SET status = ?, progress = ?, file_path = ?, file_size = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       ['completed', 100, finalPath, fileSize, jobId]
     );
+
+    broadcastEvent('job_progress', {
+      jobId,
+      status: 'completed',
+      progress: 100,
+      fileSize,
+      downloadUrl: `/api/download-file/${jobId}`
+    });
 
     console.log(`[Worker] Job ${jobId} completed: ${finalPath}`);
     return { success: true, filePath: finalPath };

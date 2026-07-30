@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 import https from 'https';
+import config from '../config/index.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -56,14 +57,22 @@ export async function spotifyToYouTube(spotifyUrl) {
     const thumbnail = thumbMatch ? thumbMatch[1] : null;
 
     // Search YouTube for the song
-    const { stdout: searchResults } = await execFileAsync(ytdlpPath, [
+    const args = [
       '--dump-json',
       '--no-download',
       '--no-warnings',
       '--default-search', 'ytsearch1',
-      '--extractor-args', 'youtube:player_client=android',
-      `ytsearch1:${searchQuery}`,
-    ], { timeout: 15000 });
+    ];
+    if (config.ytdlp?.proxy) {
+      args.push('--proxy', config.ytdlp.proxy);
+    }
+    if (config.ytdlp?.noCheckCertificates) {
+      args.push('--no-check-certificates');
+    }
+    args.push(`ytsearch1:${searchQuery}`);
+
+    // Search YouTube for the song
+    const { stdout: searchResults } = await execFileAsync(ytdlpPath, args, { timeout: 15000 });
 
     const youtubeData = JSON.parse(searchResults);
     
@@ -89,10 +98,10 @@ export async function downloadSpotifyTrack(spotifyUrl, outputPath, signal) {
     const { youtubeUrl, spotifyTitle, spotifyArtist } = await spotifyToYouTube(spotifyUrl);
 
     // Download from YouTube as MP3
+    // Download from YouTube as MP3
     const args = [
       '--no-playlist',
       '--no-warnings',
-      '--extractor-args', 'youtube:player_client=android',
       '--ffmpeg-location', ffmpegPath,
       '-x',
       '--audio-format', 'mp3',
@@ -100,8 +109,14 @@ export async function downloadSpotifyTrack(spotifyUrl, outputPath, signal) {
       '--embed-thumbnail',
       '--add-metadata',
       '-o', outputPath,
-      youtubeUrl,
     ];
+    if (config.ytdlp?.proxy) {
+      args.push('--proxy', config.ytdlp.proxy);
+    }
+    if (config.ytdlp?.noCheckCertificates) {
+      args.push('--no-check-certificates');
+    }
+    args.push(youtubeUrl);
 
     const options = { timeout: 600000 };
     if (signal) options.signal = signal;
