@@ -6,10 +6,12 @@ import { apiLimiter } from './middleware/rateLimiter.js';
 const app = express();
 
 // Middleware
+const allowedOrigins = process.env.FRONTEND_URL 
+  ? process.env.FRONTEND_URL.split(',').map(u => u.trim())
+  : '*';
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? process.env.FRONTEND_URL
-    : true,   // allow all origins in development (covers mobile on local network)
+  origin: allowedOrigins === '*' ? true : allowedOrigins,
   credentials: true,
 }));
 app.use(express.json({ limit: '1mb' }));

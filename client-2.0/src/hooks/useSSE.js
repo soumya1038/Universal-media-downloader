@@ -5,7 +5,8 @@ export function useSSE(onJobProgress) {
     let eventSource = null;
 
     try {
-      eventSource = new EventSource('/api/events');
+      const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+      eventSource = new EventSource(`${API_BASE}/api/events`);
 
       eventSource.addEventListener('job_progress', (e) => {
         try {
