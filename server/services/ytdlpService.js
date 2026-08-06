@@ -2,7 +2,7 @@ import { execFile, spawn } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { existsSync } from 'fs';
+import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { spotifyToYouTube } from './spotifyService.js';
 import config from '../config/index.js';
 
@@ -18,6 +18,22 @@ let ffmpegPath = process.platform === 'win32' ? path.join(binDir, 'ffmpeg.exe') 
 
 if (!existsSync(ytdlpPath)) ytdlpPath = 'yt-dlp';
 if (!existsSync(ffmpegPath)) ffmpegPath = 'ffmpeg';
+
+// Setup cookies file if YTDLP_COOKIES is provided
+let cookiesFilePath = null;
+if (config.ytdlp?.cookiesContent) {
+  try {
+    const storageDir = path.resolve(__dirname, '..', 'storage');
+    if (!existsSync(storageDir)) {
+      mkdirSync(storageDir, { recursive: true });
+    }
+    cookiesFilePath = path.join(storageDir, 'cookies.txt');
+    writeFileSync(cookiesFilePath, config.ytdlp.cookiesContent, 'utf-8');
+    console.log('✓ Successfully wrote YTDLP_COOKIES to storage/cookies.txt');
+  } catch (err) {
+    console.error('Failed to write YTDLP_COOKIES file:', err);
+  }
+}
 
 const AUDIO_FORMATS = new Set(['mp3', 'm4a', 'aac', 'opus', 'wav', 'flac']);
 
@@ -331,6 +347,9 @@ async function fetchMetadata(url) {
     if (config.ytdlp?.noCheckCertificates) {
       args.push('--no-check-certificates');
     }
+    if (cookiesFilePath && existsSync(cookiesFilePath)) {
+      args.push('--cookies', cookiesFilePath);
+    }
 
     args.push(url);
 
@@ -554,6 +573,9 @@ export async function downloadMedia(inputUrl, outputTemplate, options = {}) {
   }
   if (config.ytdlp?.noCheckCertificates) {
     args.push('--no-check-certificates');
+  }
+  if (cookiesFilePath && existsSync(cookiesFilePath)) {
+    args.push('--cookies', cookiesFilePath);
   }
 
   const wantsAudio = AUDIO_FORMATS.has(format) || quality === 'audio';

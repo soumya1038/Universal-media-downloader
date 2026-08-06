@@ -37,6 +37,7 @@ const config = {
   ytdlp: {
     proxy: process.env.YTDLP_PROXY || '',
     noCheckCertificates: process.env.YTDLP_NO_CHECK_CERTIFICATES === 'true',
+    cookiesContent: process.env.YTDLP_COOKIES || '',
   },
 };
 
